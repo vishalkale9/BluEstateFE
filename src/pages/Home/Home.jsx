@@ -1,40 +1,82 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import PropertyCard from '../../components/PropertyCard';
 import Footer from '../../components/Footer';
 import WhyChooseUs from '../../components/WhyChooseUs';
 import FAQ from '../../components/FAQ';
+import { assetService } from '../../services/apiService';
 
 const Home = () => {
-    const displayProperties = [
+    const [assets, setAssets] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const staticProperties = [
         {
-            id: 1,
-            name: "Miami Beach Professional Suites",
+            _id: 'static-1',
+            title: "Miami Beach Professional Suites",
             location: "Miami, Florida",
             price: 1250000,
-            yield: 8.5,
-            funding_progress: 75,
-            image_url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+            yieldPercentage: 8.5,
+            progress: 75,
+            image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         },
         {
-            id: 2,
-            name: "London City Apartments",
+            _id: 'static-2',
+            title: "London City Apartments",
             location: "London, UK",
             price: 2400000,
-            yield: 6.2,
-            funding_progress: 40,
-            image_url: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+            yieldPercentage: 6.2,
+            progress: 40,
+            image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         },
         {
-            id: 3,
-            name: "Dubai Marina Residentials",
+            _id: 'static-3',
+            title: "Dubai Marina Residentials",
             location: "Dubai, UAE",
             price: 3600000,
-            yield: 11.4,
-            funding_progress: 92,
-            image_url: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+            yieldPercentage: 11.4,
+            progress: 92,
+            image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         }
     ];
+
+    useEffect(() => {
+        const fetchAssets = async () => {
+            try {
+                const response = await assetService.getAllAssets({ isFeatured: true });
+                const rawData = response.data;
+                // Handle both array and { success, data } formats
+                const assetArray = Array.isArray(rawData) ? rawData : (rawData?.data || rawData?.assets || []);
+
+                const fetchedAssets = assetArray.map(asset => {
+                    // Construction for Image URLs as per User Guide
+                    const imageUrl = asset.images && asset.images.length > 0
+                        ? `http://localhost:5000/uploads/${asset.images[0]}`
+                        : null;
+
+                    // Standardizing fields
+                    return {
+                        ...asset,
+                        image: imageUrl,
+                        progress: Math.round(((asset.totalShares - asset.availableShares) / asset.totalShares) * 100) || 0
+                    };
+                });
+
+                if (fetchedAssets.length > 0) {
+                    setAssets(fetchedAssets);
+                } else {
+                    setAssets(staticProperties);
+                }
+            } catch (error) {
+                console.error("Failed to fetch assets", error);
+                setAssets(staticProperties);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAssets();
+    }, []);
 
     return (
         <div className="home-page bg-light min-vh-100">
@@ -80,20 +122,28 @@ const Home = () => {
                         <p className="text-muted">Explore our most popular real-world asset opportunities.</p>
                     </div>
 
-                    <div className="row g-4">
-                        {displayProperties.map(property => (
-                            <div className="col-lg-4 col-md-6" key={property.id}>
-                                <PropertyCard
-                                    title={property.name}
-                                    location={property.location}
-                                    price={property.price}
-                                    yieldPercentage={property.yield}
-                                    progress={property.funding_progress}
-                                    image={property.image_url}
-                                />
+                    {loading ? (
+                        <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    ) : (
+                        <div className="row g-4">
+                            {assets.map(property => (
+                                <div className="col-lg-4 col-md-6" key={property._id || property.id}>
+                                    <PropertyCard
+                                        title={property.title || property.name}
+                                        location={property.location}
+                                        price={property.price}
+                                        yieldPercentage={property.yieldPercentage || property.yield}
+                                        progress={property.progress || property.funding_progress}
+                                        image={property.image}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
