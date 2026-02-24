@@ -118,6 +118,8 @@ const AdminDashboard = () => {
                                     <tr className="small text-muted text-uppercase">
                                         <th className="px-4">Asset Details</th>
                                         <th>Valuation</th>
+                                        <th className="text-center">Target IRR</th>
+                                        <th className="text-center">Occupancy</th>
                                         <th className="text-center">Available Shares</th>
                                         <th className="text-center">Market Status</th>
                                         <th className="text-end px-4">Actions</th>
@@ -154,6 +156,16 @@ const AdminDashboard = () => {
                                                         </div>
                                                     </td>
                                                     <td className="small fw-medium">${Number(asset.price).toLocaleString()}</td>
+                                                    <td className="text-center">
+                                                        <span className="badge bg-primary text-white rounded-pill extra-small">
+                                                            {asset.irr || 'N/A'}%
+                                                        </span>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <span className="badge bg-white text-muted border rounded-pill extra-small">
+                                                            {asset.occupancyStatus || 'Vacant'}
+                                                        </span>
+                                                    </td>
                                                     <td className="text-center">
                                                         <div className="fw-bold small text-dark">{asset.availableShares} / {asset.totalShares}</div>
                                                         <div className="extra-small text-muted">Units Left</div>

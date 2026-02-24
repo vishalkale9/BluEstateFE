@@ -15,14 +15,18 @@ const Home = () => {
     const staticProperties = [
         {
             _id: 'static-1',
-            title: "Miami Beach Professional Suites",
-            location: "Miami, Florida",
-            price: 1250000,
-            yieldPercentage: 8.5,
+            title: "Prime Burj Khalifa Office",
+            location: "Dubai, UAE",
+            price: 5000000,
+            yieldPercentage: 12.5,
+            irr: 15.8,
             progress: 75,
-            totalShares: 1000,
-            availableShares: 250,
-            tokenPrice: 1250,
+            totalShares: 5000,
+            availableShares: 2500,
+            tokenPrice: 1000,
+            propertyType: "Office",
+            listingType: "Fractional",
+            occupancyStatus: "Rented",
             image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         },
         {
@@ -31,22 +35,30 @@ const Home = () => {
             location: "London, UK",
             price: 2400000,
             yieldPercentage: 6.2,
+            irr: 8.5,
             progress: 40,
             totalShares: 2400,
             availableShares: 1440,
             tokenPrice: 1000,
+            propertyType: "Residential",
+            listingType: "Fractional",
+            occupancyStatus: "Vacant",
             image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         },
         {
             _id: 'static-3',
-            title: "Dubai Marina Residentials",
-            location: "Dubai, UAE",
+            title: "Miami Beach Luxury Villa",
+            location: "Miami, Florida",
             price: 3600000,
             yieldPercentage: 11.4,
+            irr: 13.2,
             progress: 92,
             totalShares: 3600,
             availableShares: 288,
             tokenPrice: 1000,
+            propertyType: "Healthcare",
+            listingType: "Direct Purchase",
+            occupancyStatus: "Rented",
             image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         }
     ];
@@ -62,7 +74,7 @@ const Home = () => {
                 const fetchedAssets = assetArray.map(asset => {
                     // Construction for Image URLs as per User Guide
                     const imageUrl = asset.images && asset.images.length > 0
-                        ? `http://localhost:5000/uploads/${asset.images[0]}`
+                        ? `${import.meta.env.VITE_IMAGE_BASE_URL.replace('/api', '')}/uploads/${asset.images[0]}`
                         : null;
 
                     // Standardizing fields
@@ -154,6 +166,9 @@ const Home = () => {
                                         availableShares={property.availableShares}
                                         totalShares={property.totalShares}
                                         image={property.image}
+                                        irr={property.irr}
+                                        listingType={property.listingType}
+                                        occupancyStatus={property.occupancyStatus}
                                         onInvest={(asset) => setSelectedAsset(asset)}
                                     />
                                 </div>
