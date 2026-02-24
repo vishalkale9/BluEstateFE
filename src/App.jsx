@@ -4,6 +4,7 @@ import Home from './pages/Home/Home';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import AdminInvestments from './pages/Admin/AdminInvestments';
 import AdminKYC from './pages/Admin/AdminKYC';
+import AdminUsers from './pages/Admin/AdminUsers';
 import Portfolio from './pages/Portfolio/Portfolio';
 import KYC from './pages/KYC/KYC';
 import { AuthProvider } from './context/AuthContext';
@@ -20,7 +21,7 @@ function App() {
             <Route path="/admin/inventory" element={<AdminDashboard />} />
             <Route path="/admin/sales" element={<AdminInvestments />} />
             <Route path="/admin/kyc" element={<AdminKYC />} />
-            <Route path="/admin/users" element={<AdminInvestments />} /> {/* Placeholder */}
+            <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/kyc" element={<KYC />} />
           </Routes>
