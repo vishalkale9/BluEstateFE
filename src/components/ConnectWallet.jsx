@@ -6,7 +6,8 @@ const ConnectWallet = () => {
     const { user, refreshUser } = useAuth();
     const [loading, setLoading] = useState(false);
 
-    const handleConnect = async () => {
+    const handleConnect = async (e) => {
+        e.stopPropagation(); // Prevent dropdown from closing
         if (!window.ethereum) {
             alert("Please install MetaMask!");
             return;
@@ -14,25 +15,19 @@ const ConnectWallet = () => {
 
         setLoading(true);
         try {
-            // 1. Connect MetaMask
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             const walletAddress = accounts[0];
 
-            // 2. Fetch Nonce
             const { data: nonceData } = await authService.getNonce();
             const nonce = nonceData.nonce;
 
-            // 3. Sign Message
             const message = `Verify your wallet ownership for BluEstate: ${nonce}`;
             const signature = await window.ethereum.request({
                 method: 'personal_sign',
                 params: [message, walletAddress],
             });
 
-            // 4. Link Wallet to Backend
             await authService.linkWallet({ walletAddress, signature });
-
-            // 5. Update Global User State
             await refreshUser();
             alert("Wallet linked successfully!");
         } catch (error) {
@@ -43,7 +38,8 @@ const ConnectWallet = () => {
         }
     };
 
-    const handleDisconnect = async () => {
+    const handleDisconnect = async (e) => {
+        e.stopPropagation(); // Prevent dropdown from closing
         if (!window.confirm("Are you sure you want to disconnect your wallet?")) return;
 
         setLoading(true);
@@ -64,18 +60,19 @@ const ConnectWallet = () => {
 
     if (user?.walletAddress) {
         return (
-            <div className="btn-group">
-                <button className="btn btn-outline-primary rounded-pill px-4 fw-bold dropdown-toggle shadow-sm" data-bs-toggle="dropdown">
-                    <i className="bi bi-wallet2 me-2"></i>
+            <div className="d-flex align-items-center justify-content-between p-2 rounded-3 bg-light border border-primary border-opacity-25 w-100">
+                <div className="small fw-semibold text-primary">
+                    <i className="bi bi-link-45deg me-1"></i>
                     {truncateAddress(user.walletAddress)}
+                </div>
+                <button
+                    className="btn btn-sm btn-outline-danger border-0 p-1"
+                    onClick={handleDisconnect}
+                    disabled={loading}
+                    title="Disconnect Wallet"
+                >
+                    <i className="bi bi-x-circle"></i>
                 </button>
-                <ul className="dropdown-menu dropdown-menu-end shadow border-0 rounded-4">
-                    <li>
-                        <button className="dropdown-item text-danger py-2" onClick={handleDisconnect} disabled={loading}>
-                            <i className="bi bi-link-45deg me-2"></i> Disconnect Wallet
-                        </button>
-                    </li>
-                </ul>
             </div>
         );
     }
@@ -83,15 +80,15 @@ const ConnectWallet = () => {
     return (
         <button
             onClick={handleConnect}
-            className="btn btn-primary px-4 fw-bold rounded-pill shadow-sm"
+            className="btn btn-primary btn-sm w-100 py-2 rounded-3 fw-bold shadow-sm"
             disabled={loading}
         >
             {loading ? (
                 <span className="spinner-border spinner-border-sm me-2"></span>
             ) : (
-                <i className="bi bi-lightning-charge-fill me-2"></i>
+                <i className="bi bi-wallet2 me-2"></i>
             )}
-            {loading ? "Linking..." : "Connect Wallet"}
+            {loading ? "Linking..." : "Link Wallet (MetaMask)"}
         </button>
     );
 };
