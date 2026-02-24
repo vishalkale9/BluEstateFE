@@ -2,6 +2,8 @@ import React from 'react';
 import Navbar from '../../components/Navbar';
 import PropertyCard from '../../components/PropertyCard';
 import Footer from '../../components/Footer';
+import WhyChooseUs from '../../components/WhyChooseUs';
+import FAQ from '../../components/FAQ';
 
 const Home = () => {
     const displayProperties = [
@@ -70,7 +72,7 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Property Grid */}
+            {/* Property Grid Section */}
             <section className="py-5" id="explore">
                 <div className="container">
                     <div className="mb-5 text-center">
@@ -95,40 +97,11 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Feature Section */}
-            <section className="py-5 bg-white mt-5" id="how-it-works">
-                <div className="container">
-                    <div className="row text-center mb-5">
-                        <div className="col-lg-8 mx-auto">
-                            <h2 className="fw-bold display-6 mb-3">The Smart Way to Own Property</h2>
-                            <p className="text-muted lead">Barrier-free real estate investing through tokenization technology.</p>
-                        </div>
-                    </div>
-                    <div className="row g-4">
-                        <div className="col-md-4 text-center">
-                            <div className="p-4 rounded-4 bg-light h-100">
-                                <i className="bi bi-shield-check fs-1 text-primary mb-3 d-block"></i>
-                                <h4 className="fw-bold">Regulated</h4>
-                                <p className="text-muted small mb-0">Compliant with global financial standards and security protocols.</p>
-                            </div>
-                        </div>
-                        <div className="col-md-4 text-center">
-                            <div className="p-4 rounded-4 bg-light h-100">
-                                <i className="bi bi-graph-up-arrow fs-1 text-primary mb-3 d-block"></i>
-                                <h4 className="fw-bold">Passive Yield</h4>
-                                <p className="text-muted small mb-0">Earn rental distributions directly to your account every month.</p>
-                            </div>
-                        </div>
-                        <div className="col-md-4 text-center">
-                            <div className="p-4 rounded-4 bg-light h-100">
-                                <i className="bi bi-lightning-charge fs-1 text-primary mb-3 d-block"></i>
-                                <h4 className="fw-bold">Liquid Assets</h4>
-                                <p className="text-muted small mb-0">Buy and sell property tokens instantly on our secondary market.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            {/* Why Choose Us Section */}
+            <WhyChooseUs />
+
+            {/* FAQ Section */}
+            <FAQ />
 
             <Footer />
         </div>
