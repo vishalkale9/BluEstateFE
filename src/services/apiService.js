@@ -23,3 +23,9 @@ export const assetService = {
     }),
     deleteAsset: (id) => api.delete(`/assets/${id}`),
 };
+
+export const investmentService = {
+    buyAsset: (buyData) => api.post('/investments/buy', buyData),
+    getPortfolio: () => api.get('/investments/portfolio'),
+    getAllInvestments: () => api.get('/investments/all'), // Admin Only
+};

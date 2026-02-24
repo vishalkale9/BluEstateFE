@@ -4,11 +4,13 @@ import PropertyCard from '../../components/PropertyCard';
 import Footer from '../../components/Footer';
 import WhyChooseUs from '../../components/WhyChooseUs';
 import FAQ from '../../components/FAQ';
+import InvestModal from '../../components/InvestModal';
 import { assetService } from '../../services/apiService';
 
 const Home = () => {
     const [assets, setAssets] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedAsset, setSelectedAsset] = useState(null);
 
     const staticProperties = [
         {
@@ -18,6 +20,9 @@ const Home = () => {
             price: 1250000,
             yieldPercentage: 8.5,
             progress: 75,
+            totalShares: 1000,
+            availableShares: 250,
+            tokenPrice: 1250,
             image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         },
         {
@@ -27,6 +32,9 @@ const Home = () => {
             price: 2400000,
             yieldPercentage: 6.2,
             progress: 40,
+            totalShares: 2400,
+            availableShares: 1440,
+            tokenPrice: 1000,
             image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         },
         {
@@ -36,6 +44,9 @@ const Home = () => {
             price: 3600000,
             yieldPercentage: 11.4,
             progress: 92,
+            totalShares: 3600,
+            availableShares: 288,
+            tokenPrice: 1000,
             image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         }
     ];
@@ -133,12 +144,17 @@ const Home = () => {
                             {assets.map(property => (
                                 <div className="col-lg-4 col-md-6" key={property._id || property.id}>
                                     <PropertyCard
+                                        id={property._id || property.id}
                                         title={property.title || property.name}
                                         location={property.location}
                                         price={property.price}
                                         yieldPercentage={property.yieldPercentage || property.yield}
                                         progress={property.progress || property.funding_progress}
+                                        tokenPrice={property.tokenPrice}
+                                        availableShares={property.availableShares}
+                                        totalShares={property.totalShares}
                                         image={property.image}
+                                        onInvest={(asset) => setSelectedAsset(asset)}
                                     />
                                 </div>
                             ))}
@@ -154,6 +170,14 @@ const Home = () => {
             <FAQ />
 
             <Footer />
+
+            <InvestModal
+                asset={selectedAsset}
+                onPurchaseSuccess={() => {
+                    // Refresh data or show notification
+                    console.log("Purchase successful");
+                }}
+            />
         </div>
     );
 };
