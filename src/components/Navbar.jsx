@@ -31,6 +31,9 @@ const Navbar = () => {
                             <Link className="nav-link fw-medium px-3 text-dark" to="/explore">Explore Assets</Link>
                         </li>
                         <li className="nav-item">
+                            <Link className="nav-link fw-medium px-3 text-dark" to="/secondary-market">Secondary Market</Link>
+                        </li>
+                        <li className="nav-item">
                             <a className="nav-link fw-medium px-3 text-dark" href="/#how-it-works">How it Works</a>
                         </li>
                     </ul>
@@ -45,7 +48,7 @@ const Navbar = () => {
                                     aria-expanded="false"
                                 >
                                     <i className="bi bi-person-circle me-2"></i>
-                                    {user?.username || 'Account'}
+                                    {user?.name || user?.username || 'Account'}
                                 </button>
                                 <ul className="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2 mt-2">
                                     <li className="px-3 py-2 border-bottom mb-2">

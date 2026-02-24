@@ -44,7 +44,7 @@ const AdminSidebar = () => {
                         <i className="bi bi-person text-secondary"></i>
                     </div>
                     <div className="overflow-hidden">
-                        <div className="fw-bold text-dark text-truncate small">{user?.username || 'Administrator'}</div>
+                        <div className="fw-bold text-dark text-truncate small">{user?.name || user?.username || 'Administrator'}</div>
                         <div className="text-muted text-truncate" style={{ fontSize: '0.7rem' }}>{user?.email}</div>
                     </div>
                 </div>

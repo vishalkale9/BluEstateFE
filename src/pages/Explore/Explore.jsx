@@ -37,6 +37,19 @@ const Explore = () => {
         fetchAssets();
     }, [filter]);
 
+    useEffect(() => {
+        if (selectedAsset) {
+            const modalEl = document.getElementById('investModal');
+            if (modalEl) {
+                const modal = new window.bootstrap.Modal(modalEl);
+                modal.show();
+                modalEl.addEventListener('hidden.bs.modal', () => {
+                    setSelectedAsset(null);
+                }, { once: true });
+            }
+        }
+    }, [selectedAsset]);
+
     const categories = ['All', 'Residential', 'Commercial', 'Villas', 'Industrial', 'Land'];
 
     return (
