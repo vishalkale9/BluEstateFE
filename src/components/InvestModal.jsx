@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { investmentService } from '../services/apiService';
+import { useAuth } from '../context/AuthContext';
 
 const InvestModal = ({ asset, onPurchaseSuccess }) => {
+    const { user } = useAuth();
     const [shares, setShares] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -11,6 +13,7 @@ const InvestModal = ({ asset, onPurchaseSuccess }) => {
 
     const tokenPrice = asset.tokenPrice || 100;
     const totalCost = shares * tokenPrice;
+    const isVerified = user?.kycStatus === 'verified';
 
     const handlePurchase = async () => {
         if (Number(shares) <= 0) {
@@ -89,6 +92,17 @@ const InvestModal = ({ asset, onPurchaseSuccess }) => {
                                     </div>
                                 )}
 
+                                {!isVerified && (
+                                    <div className="alert alert-warning border-0 rounded-4 p-3 mb-4 small">
+                                        <div className="d-flex align-items-center mb-1">
+                                            <i className="bi bi-shield-lock-fill fs-5 me-2 text-warning"></i>
+                                            <span className="fw-bold text-dark">Identity Verification Required</span>
+                                        </div>
+                                        <p className="mb-2 text-muted">To maintain financial integrity, you must complete your KYC before investing in real-world assets.</p>
+                                        <a href="/kyc" className="btn btn-warning btn-sm w-100 rounded-pill fw-bold">Complete KYC Now</a>
+                                    </div>
+                                )}
+
                                 <div className="mb-4">
                                     <div className="d-flex justify-content-between align-items-end mb-2">
                                         <label className="form-label small fw-bold text-uppercase mb-0" style={{ letterSpacing: '0.05rem' }}>Number of Shares</label>
@@ -100,12 +114,14 @@ const InvestModal = ({ asset, onPurchaseSuccess }) => {
                                         <button
                                             className="btn btn-light border-0 px-4"
                                             type="button"
+                                            disabled={!isVerified}
                                             onClick={() => setShares(Math.max(1, shares - 1))}
                                         >-</button>
                                         <input
                                             type="number"
                                             className="form-control border-0 text-center fw-bold bg-white"
                                             value={shares}
+                                            disabled={!isVerified}
                                             onChange={(e) => setShares(Math.min(asset.availableShares, Math.max(1, e.target.value)))}
                                             min="1"
                                             max={asset.availableShares}
@@ -113,6 +129,7 @@ const InvestModal = ({ asset, onPurchaseSuccess }) => {
                                         <button
                                             className="btn btn-light border-0 px-4"
                                             type="button"
+                                            disabled={!isVerified}
                                             onClick={() => setShares(Math.min(asset.availableShares, Number(shares) + 1))}
                                         >+</button>
                                     </div>
@@ -133,10 +150,12 @@ const InvestModal = ({ asset, onPurchaseSuccess }) => {
                                 <button
                                     className="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm"
                                     onClick={handlePurchase}
-                                    disabled={loading || asset.availableShares <= 0}
+                                    disabled={loading || asset.availableShares <= 0 || !isVerified}
                                 >
                                     {loading ? (
                                         <><span className="spinner-border spinner-border-sm me-2"></span>Processing Transaction...</>
+                                    ) : !isVerified ? (
+                                        'Verification Required'
                                     ) : asset.availableShares <= 0 ? (
                                         'Asset Sold Out'
                                     ) : (

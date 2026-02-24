@@ -53,19 +53,34 @@ const Navbar = () => {
                                         <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{user?.email}</div>
                                     </li>
 
-                                    {user?.role === 'admin' && (
+                                    {user?.role === 'admin' ? (
                                         <li>
                                             <Link className="dropdown-item rounded-3 py-2 mb-1" to="/admin">
                                                 <i className="bi bi-speedometer2 me-2 text-primary"></i> Admin Dashboard
                                             </Link>
                                         </li>
-                                    )}
+                                    ) : (
+                                        <>
+                                            <li>
+                                                <Link className="dropdown-item rounded-3 py-2 mb-1" to="/portfolio">
+                                                    <i className="bi bi-briefcase me-2 text-primary"></i> My Portfolio
+                                                </Link>
+                                            </li>
 
-                                    <li>
-                                        <Link className="dropdown-item rounded-3 py-2 mb-1" to="/portfolio">
-                                            <i className="bi bi-briefcase me-2 text-primary"></i> My Portfolio
-                                        </Link>
-                                    </li>
+                                            <li>
+                                                <Link className="dropdown-item rounded-3 py-2 mb-1 d-flex align-items-center justify-content-between" to="/kyc">
+                                                    <span><i className="bi bi-shield-check me-2 text-primary"></i> KYC Status</span>
+                                                    {user?.kycStatus === 'verified' ? (
+                                                        <span className="badge bg-success-subtle text-success rounded-pill extra-small">Verified</span>
+                                                    ) : user?.kycStatus === 'pending' ? (
+                                                        <span className="badge bg-warning-subtle text-warning rounded-pill extra-small">Pending</span>
+                                                    ) : (
+                                                        <span className="badge bg-danger-subtle text-danger rounded-pill extra-small">Unverified</span>
+                                                    )}
+                                                </Link>
+                                            </li>
+                                        </>
+                                    )}
 
                                     <li>
                                         <hr className="dropdown-divider" />

@@ -9,6 +9,7 @@ const AdminSidebar = () => {
         { path: '/admin', icon: 'bi-speedometer2', label: 'Dashboard' },
         { path: '/admin/inventory', icon: 'bi-building', label: 'Assets' },
         { path: '/admin/sales', icon: 'bi-cart-check', label: 'Investments' },
+        { path: '/admin/kyc', icon: 'bi-shield-lock', label: 'Identity Review' },
         { path: '/admin/users', icon: 'bi-people', label: 'Users' },
     ];
 
