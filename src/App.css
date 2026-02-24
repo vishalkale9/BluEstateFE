@@ -1,0 +1,4 @@
+/* Remove default Vite styles that center content and break Bootstrap layouts */
+#root {
+  width: 100%;
+}
