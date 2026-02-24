@@ -103,48 +103,57 @@ const InvestModal = ({ asset, onPurchaseSuccess }) => {
                                     </div>
                                 )}
 
-                                <div className="mb-4">
-                                    <div className="d-flex justify-content-between align-items-end mb-2">
-                                        <label className="form-label small fw-bold text-uppercase mb-0" style={{ letterSpacing: '0.05rem' }}>Number of Shares</label>
-                                        <span className="badge bg-light text-muted fw-normal border">
-                                            {asset.availableShares} shares left
-                                        </span>
+                                {asset.listingType === 'Direct Purchase' ? (
+                                    <div className="mb-4">
+                                        <div className="alert alert-info border-0 rounded-4 p-3 small">
+                                            <i className="bi bi-info-circle-fill me-2"></i>
+                                            This is a <strong>Direct Purchase</strong> listing. You are acquiring the entire property title.
+                                        </div>
                                     </div>
-                                    <div className="input-group input-group-lg border rounded-3 overflow-hidden">
-                                        <button
-                                            className="btn btn-light border-0 px-4"
-                                            type="button"
-                                            disabled={!isVerified}
-                                            onClick={() => setShares(Math.max(1, shares - 1))}
-                                        >-</button>
-                                        <input
-                                            type="number"
-                                            className="form-control border-0 text-center fw-bold bg-white"
-                                            value={shares}
-                                            disabled={!isVerified}
-                                            onChange={(e) => setShares(Math.min(asset.availableShares, Math.max(1, e.target.value)))}
-                                            min="1"
-                                            max={asset.availableShares}
-                                        />
-                                        <button
-                                            className="btn btn-light border-0 px-4"
-                                            type="button"
-                                            disabled={!isVerified}
-                                            onClick={() => setShares(Math.min(asset.availableShares, Number(shares) + 1))}
-                                        >+</button>
+                                ) : (
+                                    <div className="mb-4">
+                                        <div className="d-flex justify-content-between align-items-end mb-2">
+                                            <label className="form-label small fw-bold text-uppercase mb-0" style={{ letterSpacing: '0.05rem' }}>Number of Shares</label>
+                                            <span className="badge bg-light text-muted fw-normal border">
+                                                {asset.availableShares} shares left
+                                            </span>
+                                        </div>
+                                        <div className="input-group input-group-lg border rounded-3 overflow-hidden">
+                                            <button
+                                                className="btn btn-light border-0 px-4"
+                                                type="button"
+                                                disabled={!isVerified}
+                                                onClick={() => setShares(Math.max(1, shares - 1))}
+                                            >-</button>
+                                            <input
+                                                type="number"
+                                                className="form-control border-0 text-center fw-bold bg-white"
+                                                value={shares}
+                                                disabled={!isVerified}
+                                                onChange={(e) => setShares(Math.min(asset.availableShares, Math.max(1, e.target.value)))}
+                                                min="1"
+                                                max={asset.availableShares}
+                                            />
+                                            <button
+                                                className="btn btn-light border-0 px-4"
+                                                type="button"
+                                                disabled={!isVerified}
+                                                onClick={() => setShares(Math.min(asset.availableShares, Number(shares) + 1))}
+                                            >+</button>
+                                        </div>
+                                        <div className="d-flex justify-content-between mt-2 px-1">
+                                            <span className="text-muted small">Price per share</span>
+                                            <span className="fw-bold small">${tokenPrice.toLocaleString()}</span>
+                                        </div>
                                     </div>
-                                    <div className="d-flex justify-content-between mt-2 px-1">
-                                        <span className="text-muted small">Price per share</span>
-                                        <span className="fw-bold small">${tokenPrice.toLocaleString()}</span>
-                                    </div>
-                                </div>
+                                )}
 
                                 <div className="p-4 bg-primary bg-opacity-10 rounded-4 mb-4">
                                     <div className="d-flex justify-content-between align-items-center mb-1">
-                                        <span className="text-muted fw-medium">Order Total</span>
-                                        <h4 className="fw-bold text-primary mb-0">${totalCost.toLocaleString()}</h4>
+                                        <span className="text-muted fw-medium">{asset.listingType === 'Direct Purchase' ? 'Full Acquisition Cost' : 'Order Total'}</span>
+                                        <h4 className="fw-bold text-primary mb-0">${(asset.listingType === 'Direct Purchase' ? asset.price : totalCost).toLocaleString()}</h4>
                                     </div>
-                                    <p className="text-muted x-small mb-0">Platform fees and gas are currently included.</p>
+                                    <p className="text-muted x-small mb-0">Platform fees and escrow guarantees are included.</p>
                                 </div>
 
                                 <button
