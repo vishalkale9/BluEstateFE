@@ -1,6 +1,10 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
+import ConnectWallet from './ConnectWallet';
 
 const Navbar = () => {
+    const { isAuthenticated, logout } = useAuth();
+
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-3">
             <div className="container">
@@ -31,8 +35,24 @@ const Navbar = () => {
                     </ul>
 
                     <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0">
-                        <button className="btn btn-outline-primary px-4 fw-semibold rounded-pill">Login</button>
-                        <button className="btn btn-primary px-4 fw-semibold rounded-pill shadow-sm">Connect Wallet</button>
+                        {isAuthenticated ? (
+                            <>
+                                <ConnectWallet />
+                                <button onClick={logout} className="btn btn-outline-danger px-4 rounded-pill fw-bold ms-2">
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    className="btn btn-outline-primary px-4 fw-bold rounded-pill"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#authModal"
+                                >
+                                    Login / Sign Up
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
