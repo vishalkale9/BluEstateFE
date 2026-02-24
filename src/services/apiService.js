@@ -29,3 +29,11 @@ export const investmentService = {
     getPortfolio: () => api.get('/investments/portfolio'),
     getAllInvestments: () => api.get('/investments/all'), // Admin Only
 };
+
+export const kycService = {
+    submitKYC: (formData) => api.post('/kyc/submit', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    getPendingKYC: () => api.get('/kyc/list'), // Admin Only
+    verifyKYC: (userId, data) => api.put(`/kyc/verify/${userId}`, data), // Admin Only
+};
