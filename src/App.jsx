@@ -6,6 +6,8 @@ import AdminInvestments from './pages/Admin/AdminInvestments';
 import AdminKYC from './pages/Admin/AdminKYC';
 import AdminUsers from './pages/Admin/AdminUsers';
 import Portfolio from './pages/Portfolio/Portfolio';
+import Explore from './pages/Explore/Explore';
+import PropertyDetails from './pages/PropertyDetails/PropertyDetails';
 import KYC from './pages/KYC/KYC';
 import { AuthProvider } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
@@ -17,6 +19,8 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/property/:id" element={<PropertyDetails />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/inventory" element={<AdminDashboard />} />
             <Route path="/admin/sales" element={<AdminInvestments />} />

@@ -14,6 +14,17 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
         area: '',
         amenities: '',
         isFeatured: false,
+        irr: '',
+        propertyType: 'Office',
+        listingType: 'Fractional',
+        occupancyStatus: 'Vacant',
+        yearBuilt: '',
+        mapUrl: '',
+        lat: '',
+        lng: '',
+        nearbyLandmarks: '',
+        marketGrowth: '',
+        projectHighlights: '',
     });
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -34,6 +45,17 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                 area: initialData.area || '',
                 amenities: initialData.amenities || '',
                 isFeatured: initialData.isFeatured || false,
+                irr: initialData.irr || '',
+                propertyType: initialData.propertyType || 'Office',
+                listingType: initialData.listingType || 'Fractional',
+                occupancyStatus: initialData.occupancyStatus || 'Vacant',
+                yearBuilt: initialData.yearBuilt || '',
+                mapUrl: initialData.mapUrl || '',
+                lat: initialData.coordinates?.lat || initialData.lat || '',
+                lng: initialData.coordinates?.lng || initialData.lng || '',
+                nearbyLandmarks: Array.isArray(initialData.nearbyLandmarks) ? initialData.nearbyLandmarks.join(', ') : (initialData.nearbyLandmarks || ''),
+                marketGrowth: initialData.marketGrowth || '',
+                projectHighlights: Array.isArray(initialData.projectHighlights) ? initialData.projectHighlights.join(', ') : (initialData.projectHighlights || ''),
             });
         } else {
             setFormData({
@@ -48,6 +70,17 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                 area: '',
                 amenities: '',
                 isFeatured: false,
+                irr: '',
+                propertyType: 'Office',
+                listingType: 'Fractional',
+                occupancyStatus: 'Vacant',
+                yearBuilt: '',
+                mapUrl: '',
+                lat: '',
+                lng: '',
+                nearbyLandmarks: '',
+                marketGrowth: '',
+                projectHighlights: '',
             });
         }
     }, [initialData]);
@@ -105,6 +138,17 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                     area: '',
                     amenities: '',
                     isFeatured: false,
+                    irr: '',
+                    propertyType: 'Office',
+                    listingType: 'Fractional',
+                    occupancyStatus: 'Vacant',
+                    yearBuilt: '',
+                    mapUrl: '',
+                    lat: '',
+                    lng: '',
+                    nearbyLandmarks: '',
+                    marketGrowth: '',
+                    projectHighlights: '',
                 });
                 setImages([]);
             }
@@ -253,6 +297,77 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                         />
                     </div>
 
+                    <div className="col-md-4">
+                        <label className="form-label small fw-bold">Target IRR (%)</label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            name="irr"
+                            className="form-control bg-light border-0 px-3 py-2"
+                            placeholder="15.8"
+                            required
+                            value={formData.irr}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="col-md-4">
+                        <label className="form-label small fw-bold">Year Built</label>
+                        <input
+                            type="number"
+                            name="yearBuilt"
+                            className="form-control bg-light border-0 px-3 py-2"
+                            placeholder="2021"
+                            required
+                            value={formData.yearBuilt}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="col-md-4">
+                        <label className="form-label small fw-bold">Property Type</label>
+                        <select
+                            name="propertyType"
+                            className="form-select bg-light border-0 px-3 py-2"
+                            onChange={handleChange}
+                            value={formData.propertyType}
+                        >
+                            <option value="Office">Office</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Industrial">Industrial</option>
+                            <option value="Residential">Residential</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Villas">Villas</option>
+                        </select>
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label small fw-bold">Listing Type</label>
+                        <select
+                            name="listingType"
+                            className="form-select bg-light border-0 px-3 py-2"
+                            onChange={handleChange}
+                            value={formData.listingType}
+                        >
+                            <option value="Fractional">Fractional Listing</option>
+                            <option value="Direct Purchase">Direct Purchase</option>
+                        </select>
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label small fw-bold">Occupancy Status</label>
+                        <select
+                            name="occupancyStatus"
+                            className="form-select bg-light border-0 px-3 py-2"
+                            onChange={handleChange}
+                            value={formData.occupancyStatus}
+                        >
+                            <option value="Rented">Rented</option>
+                            <option value="Vacant">Vacant</option>
+                            <option value="Under Construction">Under Construction</option>
+                        </select>
+                    </div>
+
                     <div className="col-12">
                         <label className="form-label small fw-bold">Amenities</label>
                         <input
@@ -264,6 +379,87 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                             value={formData.amenities}
                             onChange={handleChange}
                         />
+                    </div>
+
+                    <div className="col-12">
+                        <hr className="my-2 border-secondary opacity-10" />
+                        <h6 className="fw-bold text-primary mb-3">
+                            <i className="bi bi-geo-fill me-2"></i>Project Intelligence & Location
+                        </h6>
+                    </div>
+
+                    <div className="col-md-12">
+                        <label className="form-label small fw-bold">Google Maps URL</label>
+                        <input
+                            type="url"
+                            name="mapUrl"
+                            className="form-control bg-light border-0 px-3 py-2"
+                            placeholder="https://maps.google.com/..."
+                            value={formData.mapUrl}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label small fw-bold">Latitude</label>
+                        <input
+                            type="number"
+                            step="any"
+                            name="lat"
+                            className="form-control bg-light border-0 px-3 py-2"
+                            placeholder="25.2048"
+                            value={formData.lat}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label small fw-bold">Longitude</label>
+                        <input
+                            type="number"
+                            step="any"
+                            name="lng"
+                            className="form-control bg-light border-0 px-3 py-2"
+                            placeholder="55.2708"
+                            value={formData.lng}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label small fw-bold">Nearby Landmarks (Comma separated)</label>
+                        <input
+                            type="text"
+                            name="nearbyLandmarks"
+                            className="form-control bg-light border-0 px-3 py-2"
+                            placeholder="Burj Khalifa, Metro, Marina Mall"
+                            value={formData.nearbyLandmarks}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label small fw-bold">Market Growth Cap (%)</label>
+                        <input
+                            type="text"
+                            name="marketGrowth"
+                            className="form-control bg-light border-0 px-3 py-2"
+                            placeholder="7.5% annual growth forecast"
+                            value={formData.marketGrowth}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="col-12">
+                        <label className="form-label small fw-bold">Project Highlights (Comma separated)</label>
+                        <textarea
+                            name="projectHighlights"
+                            className="form-control bg-light border-0 px-3 py-2"
+                            rows="2"
+                            placeholder="Sea View, Sustainable Architecture, 24/7 Concierge"
+                            value={formData.projectHighlights}
+                            onChange={handleChange}
+                        ></textarea>
                     </div>
 
                     <div className="col-12">

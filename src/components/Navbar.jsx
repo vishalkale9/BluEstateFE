@@ -28,7 +28,7 @@ const Navbar = () => {
                             <Link className="nav-link fw-medium px-3 text-dark" to="/">Home</Link>
                         </li>
                         <li className="nav-item">
-                            <a className="nav-link fw-medium px-3 text-dark" href="/#explore">Explore Assets</a>
+                            <Link className="nav-link fw-medium px-3 text-dark" to="/explore">Explore Assets</Link>
                         </li>
                         <li className="nav-item">
                             <a className="nav-link fw-medium px-3 text-dark" href="/#how-it-works">How it Works</a>
