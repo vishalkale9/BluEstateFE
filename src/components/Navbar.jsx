@@ -1,6 +1,18 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
+    const { isAuthenticated, logout, connectWallet } = useAuth();
+
+    const handleWalletConnect = async () => {
+        try {
+            await connectWallet();
+            alert("Wallet connected successfully!");
+        } catch (err) {
+            alert("Connection failed: " + err.message);
+        }
+    };
+
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm py-3">
             <div className="container">
@@ -13,9 +25,6 @@ const Navbar = () => {
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#navbarNav"
-                    aria-controls="navbarNav"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
                 >
                     <span className="navbar-toggler-icon"></span>
                 </button>
@@ -31,14 +40,31 @@ const Navbar = () => {
                         <li className="nav-item">
                             <a className="nav-link fw-medium px-3 text-dark" href="/how-it-works">How it Works</a>
                         </li>
-                        <li className="nav-item">
-                            <a className="nav-link fw-medium px-3 text-dark" href="/about">About Us</a>
-                        </li>
                     </ul>
 
                     <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0">
-                        <button className="btn btn-outline-primary px-4 fw-semibold rounded-pill">Login</button>
-                        <button className="btn btn-primary px-4 fw-semibold rounded-pill shadow-sm">Connect Wallet</button>
+                        {isAuthenticated ? (
+                            <>
+                                <span className="text-muted small me-2">Welcome!</span>
+                                <button onClick={logout} className="btn btn-outline-danger px-4 rounded-pill">Logout</button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    className="btn btn-outline-primary px-4 fw-semibold rounded-pill"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#authModal"
+                                >
+                                    Login
+                                </button>
+                                <button
+                                    onClick={handleWalletConnect}
+                                    className="btn btn-primary px-4 fw-semibold rounded-pill shadow-sm"
+                                >
+                                    Connect Wallet
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
