@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
+import AdminLayout from '../../layouts/AdminLayout';
 import CreateAssetForm from '../../components/Admin/CreateAssetForm';
-import { assetService } from '../../services/apiService';
+import { assetService, investmentService } from '../../services/apiService';
 
 const AdminDashboard = () => {
     const [assets, setAssets] = useState([]);
@@ -10,37 +9,40 @@ const AdminDashboard = () => {
     const [stats, setStats] = useState({
         totalAssets: 0,
         totalValue: 0,
-        totalShares: 0
+        totalShares: 0,
+        totalAvailable: 0
     });
 
-    const fetchAssets = React.useCallback(async () => {
+    const fetchData = React.useCallback(async () => {
         setLoading(true);
         try {
-            const response = await assetService.getAllAssets();
-            const rawData = response.data;
-            const data = Array.isArray(rawData) ? rawData : (rawData?.data || rawData?.assets || []);
+            // Fetch Assets
+            const assetRes = await assetService.getAllAssets();
+            const assetData = Array.isArray(assetRes.data) ? assetRes.data : (assetRes.data?.data || assetRes.data?.assets || []);
+            setAssets(assetData);
 
-            setAssets(data);
-
-            const totalVal = data.reduce((acc, curr) => acc + (Number(curr.price) || 0), 0);
-            const totalSh = data.reduce((acc, curr) => acc + (Number(curr.totalShares) || 0), 0);
+            // Calculate Stats
+            const totalVal = assetData.reduce((acc, curr) => acc + (Number(curr.price) || 0), 0);
+            const totalSh = assetData.reduce((acc, curr) => acc + (Number(curr.totalShares) || 0), 0);
+            const totalAvail = assetData.reduce((acc, curr) => acc + (Number(curr.availableShares) || 0), 0);
 
             setStats({
-                totalAssets: data.length,
+                totalAssets: assetData.length,
                 totalValue: totalVal,
-                totalShares: totalSh
+                totalShares: totalSh,
+                totalAvailable: totalAvail
             });
+
         } catch (error) {
-            console.error("Failed to fetch assets for admin", error);
-            setAssets([]);
+            console.error("Failed to fetch dashboard data", error);
         } finally {
             setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchAssets();
-    }, [fetchAssets]);
+        fetchData();
+    }, [fetchData]);
 
     const [editingAsset, setEditingAsset] = useState(null);
 
@@ -49,166 +51,153 @@ const AdminDashboard = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to permanently delete this asset?")) return;
+        if (!window.confirm("Are you sure?")) return;
         try {
             await assetService.deleteAsset(id);
-            alert("Asset deleted successfully!");
-            fetchAssets();
+            fetchData();
         } catch (error) {
-            console.error("Delete failed", error);
-            alert(error.response?.data?.message || "Failed to delete asset.");
+            alert("Delete failed");
         }
     };
 
     return (
-        <div className="bg-light min-vh-100">
-            <Navbar />
-
-            <div className="container py-5">
-                <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 gap-3">
-                    <div>
-                        <h2 className="fw-bold text-dark mb-1">Asset Control Center</h2>
-                        <p className="text-muted mb-0">Manage and monitor all platform listings</p>
-                    </div>
-                    <button
-                        className="btn btn-primary px-4 py-2 rounded-pill fw-bold shadow-sm"
-                        data-bs-toggle="modal"
-                        data-bs-target="#createAssetModal"
-                        onClick={() => setEditingAsset(null)}
-                    >
-                        <i className="bi bi-plus-lg me-2"></i> Add New Asset
-                    </button>
+        <AdminLayout>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 className="fw-bold mb-0">Platform Overview</h4>
+                    <p className="text-muted small mb-0">Real-time status of properties and investments.</p>
                 </div>
+                <button
+                    className="btn btn-primary btn-sm px-4 rounded-pill fw-bold shadow-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#createAssetModal"
+                    onClick={() => setEditingAsset(null)}
+                >
+                    <i className="bi bi-plus-lg me-1"></i> Add Property
+                </button>
+            </div>
 
-                {/* Stats Row */}
-                <div className="row g-4 mb-5">
-                    <div className="col-md-4">
-                        <div className="card border-0 shadow-sm rounded-4 p-3 text-center">
-                            <h6 className="text-muted small text-uppercase fw-bold">Total Assets</h6>
-                            <h3 className="fw-bold text-primary mb-0">{stats.totalAssets}</h3>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="card border-0 shadow-sm rounded-4 p-3 text-center">
-                            <h6 className="text-muted small text-uppercase fw-bold">Market Value</h6>
-                            <h3 className="fw-bold text-primary mb-0">${stats.totalValue.toLocaleString()}</h3>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="card border-0 shadow-sm rounded-4 p-3 text-center">
-                            <h6 className="text-muted small text-uppercase fw-bold">Total Shares</h6>
-                            <h3 className="fw-bold text-primary mb-0">{stats.totalShares.toLocaleString()}</h3>
+            {/* Showcase Stats Cards */}
+            <div className="row g-3 mb-4">
+                <div className="col-md-4">
+                    <div className="card border-0 shadow-sm rounded-3 bg-primary text-white text-center">
+                        <div className="card-body py-4">
+                            <h6 className="text-white-50 small mb-1 text-uppercase fw-bold">Total Assets</h6>
+                            <h2 className="fw-bold mb-0">{stats.totalAssets}</h2>
                         </div>
                     </div>
                 </div>
-
-                {/* Asset Management Table */}
-                <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <div className="card-header bg-white py-3 border-0">
-                        <h5 className="mb-0 fw-bold">Existing Assets</h5>
+                <div className="col-md-4">
+                    <div className="card border-0 shadow-sm rounded-3 text-center">
+                        <div className="card-body py-4">
+                            <h6 className="text-secondary small mb-1 text-uppercase fw-bold">Portfolio AUM</h6>
+                            <h2 className="fw-bold mb-0">${(stats.totalValue / 1000000).toFixed(1)}M</h2>
+                        </div>
                     </div>
-                    <div className="table-responsive">
-                        <table className="table table-hover align-middle mb-0">
-                            <thead className="bg-light text-muted small text-uppercase">
-                                <tr>
-                                    <th className="px-4 py-3">Property</th>
-                                    <th className="py-3">Category / Location</th>
-                                    <th className="py-3 text-center">Value / APR</th>
-                                    <th className="py-3 text-center">Availability</th>
-                                    <th className="py-3 text-center">Status</th>
-                                    <th className="px-4 py-3 text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <tr>
-                                        <td colSpan="6" className="text-center py-5">
-                                            <div className="spinner-border text-primary spinner-border-sm me-2"></div>
-                                            Loading assets...
-                                        </td>
-                                    </tr>
-                                ) : assets.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="6" className="text-center py-5 text-muted italic">
-                                            No assets found. Start by adding your first listing!
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    assets.map((asset) => (
-                                        <tr key={asset._id}>
-                                            <td className="px-4">
-                                                <div className="d-flex align-items-center">
-                                                    <img
-                                                        src={asset.images && asset.images[0] ? `http://localhost:5000/uploads/${asset.images[0]}` : "https://via.placeholder.com/40"}
-                                                        className="rounded-2 me-3"
-                                                        style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                                                        alt=""
-                                                    />
-                                                    <div>
-                                                        <div className="fw-bold text-dark">{asset.title}</div>
-                                                        <div className="small text-muted">ID: {asset._id.substring(0, 8)}...</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="fw-bold text-dark">{asset.category || 'Residential'}</div>
-                                                <div className="small text-muted">{asset.location}</div>
-                                            </td>
-                                            <td className="text-center">
-                                                <div className="fw-bold text-primary">${Number(asset.price).toLocaleString()}</div>
-                                                <div className="small text-success">{asset.apr || asset.yieldPercentage || 0}% APR</div>
-                                            </td>
-                                            <td className="text-center">
-                                                <div className="small fw-bold">{asset.availableShares} / {asset.totalShares}</div>
-                                                <div className="progress mx-auto" style={{ height: '4px', width: '80px' }}>
-                                                    <div className="progress-bar bg-success" style={{ width: `${(asset.availableShares / asset.totalShares) * 100}%` }}></div>
-                                                </div>
-                                            </td>
-                                            <td className="text-center">
-                                                <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 small">Active</span>
-                                            </td>
-                                            <td className="px-4 text-end">
-                                                <button
-                                                    className="btn btn-sm btn-light rounded-circle me-2"
-                                                    title="Edit"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#createAssetModal"
-                                                    onClick={() => handleEdit(asset)}
-                                                >
-                                                    <i className="bi bi-pencil-square text-primary"></i>
-                                                </button>
-                                                <button
-                                                    className="btn btn-sm btn-light rounded-circle"
-                                                    onClick={() => handleDelete(asset._id)}
-                                                    title="Delete"
-                                                >
-                                                    <i className="bi bi-trash3 text-danger"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                </div>
+                <div className="col-md-4">
+                    <div className="card border-0 shadow-sm rounded-3 text-center">
+                        <div className="card-body py-4">
+                            <h6 className="text-secondary small mb-1 text-uppercase fw-bold">Available Shares</h6>
+                            <h2 className="fw-bold mb-0">{stats.totalAvailable?.toLocaleString() || 0}</h2>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Modal for Creating/Editing Asset */}
+            <div className="row g-4">
+                <div className="col-lg-12">
+                    <div className="card border-0 shadow-sm rounded-3 h-100">
+                        <div className="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                            <h6 className="mb-0 fw-bold">Active Inventory Management</h6>
+                            <span className="badge bg-light text-muted fw-normal">{assets.length} Total Properties</span>
+                        </div>
+                        <div className="table-responsive">
+                            <table className="table table-hover align-middle mb-0">
+                                <thead className="bg-light">
+                                    <tr className="small text-muted text-uppercase">
+                                        <th className="px-4">Asset Details</th>
+                                        <th>Valuation</th>
+                                        <th className="text-center">Available Shares</th>
+                                        <th className="text-center">Market Status</th>
+                                        <th className="text-end px-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loading ? (
+                                        <tr><td colSpan="5" className="text-center py-5">Loading global inventory...</td></tr>
+                                    ) : assets.length === 0 ? (
+                                        <tr><td colSpan="5" className="text-center py-5 text-muted">No properties synchronized.</td></tr>
+                                    ) : (
+                                        assets.map(asset => {
+                                            const imageUrl = asset.images && asset.images.length > 0
+                                                ? `${import.meta.env.VITE_IMAGE_BASE_URL}/uploads/${asset.images[0]}`
+                                                : "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80";
+
+                                            return (
+                                                <tr key={asset._id}>
+                                                    <td className="px-4 py-3">
+                                                        <div className="d-flex align-items-center">
+                                                            <div className="flex-shrink-0 me-3">
+                                                                <img
+                                                                    src={imageUrl}
+                                                                    alt={asset.title}
+                                                                    className="rounded-3 shadow-sm border"
+                                                                    style={{ width: '48px', height: '48px', objectFit: 'cover' }}
+                                                                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" }}
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <div className="fw-bold text-dark small">{asset.title}</div>
+                                                                <div className="text-muted extra-small">{asset.location}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="small fw-medium">${Number(asset.price).toLocaleString()}</td>
+                                                    <td className="text-center">
+                                                        <div className="fw-bold small text-dark">{asset.availableShares} / {asset.totalShares}</div>
+                                                        <div className="extra-small text-muted">Units Left</div>
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <span className={`badge rounded-pill extra-small ${asset.availableShares > 0 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
+                                                            {asset.availableShares > 0 ? 'Active' : 'Sold Out'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="text-end px-4">
+                                                        <div className="btn-group">
+                                                            <button className="btn btn-sm btn-light border" data-bs-toggle="modal" data-bs-target="#createAssetModal" onClick={() => handleEdit(asset)}>
+                                                                <i className="bi bi-pencil"></i>
+                                                            </button>
+                                                            <button className="btn btn-sm btn-light border text-danger" onClick={() => handleDelete(asset._id)}>
+                                                                <i className="bi bi-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Property Configuration Modal */}
             <div className="modal fade" id="createAssetModal" tabIndex="-1" aria-hidden="true">
                 <div className="modal-dialog modal-lg modal-dialog-centered">
-                    <div className="modal-content border-0 shadow-lg rounded-4">
-                        <div className="modal-header border-0 pb-0">
+                    <div className="modal-content border-0 shadow-lg rounded-3">
+                        <div className="modal-header border-bottom py-3">
+                            <h5 className="modal-title fw-bold">Configure RWA Listing</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div className="modal-body p-0">
                             <CreateAssetForm
                                 initialData={editingAsset}
                                 onAssetCreated={() => {
-                                    fetchAssets();
-                                    const modalElement = document.getElementById('createAssetModal');
-                                    // @ts-ignore
-                                    const modal = window.bootstrap.Modal.getInstance(modalElement);
+                                    fetchData();
+                                    const modal = window.bootstrap.Modal.getInstance(document.getElementById('createAssetModal'));
                                     if (modal) modal.hide();
                                 }}
                             />
@@ -217,8 +206,10 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            <Footer />
-        </div>
+            <style>{`
+                .extra-small { font-size: 0.75rem; }
+            `}</style>
+        </AdminLayout>
     );
 };
 
