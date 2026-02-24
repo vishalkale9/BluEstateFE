@@ -2,37 +2,25 @@ import React from 'react';
 import Navbar from '../../components/Navbar';
 import PropertyCard from '../../components/PropertyCard';
 import Footer from '../../components/Footer';
+import { useAssets } from '../../hooks/useAssets';
 
 const Home = () => {
-    const dummyProperties = [
+    const { assets, loading, error } = useAssets();
+
+    // Standard fallback properties in case API is empty or failing
+    const staticProperties = [
         {
-            id: 1,
-            title: "Miami Beach Professional Suites",
+            id: "static-1",
+            name: "Miami Beach Professional Suites",
             location: "Miami, Florida",
             price: 1250000,
-            yieldPercentage: 8.5,
-            progress: 75,
-            image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 2,
-            title: "London City Apartments",
-            location: "London, UK",
-            price: 2400000,
-            yieldPercentage: 6.2,
-            progress: 40,
-            image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-        },
-        {
-            id: 3,
-            title: "Dubai Marina Residentials",
-            location: "Dubai, UAE",
-            price: 3600000,
-            yieldPercentage: 11.4,
-            progress: 92,
-            image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+            yield: 8.5,
+            funding_progress: 75,
+            image_url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
         }
     ];
+
+    const displayProperties = assets?.length > 0 ? assets : staticProperties;
 
     return (
         <div className="home-page bg-light min-vh-100">
@@ -76,18 +64,11 @@ const Home = () => {
                         </div>
 
                         <div className="col-lg-6 ps-lg-5">
-                            <div className="position-relative">
-                                <img
-                                    src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-                                    alt="Modern Real Estate"
-                                    className="img-fluid rounded-4 shadow-2xl"
-                                />
-                                <div className="position-absolute bottom-0 start-0 m-4 bg-white p-3 rounded-3 shadow-lg border-start border-primary border-4 w-50 d-none d-md-block">
-                                    <p className="fw-bold mb-0 text-dark small">Recent Investment</p>
-                                    <p className="text-primary fw-bold mb-0">$12,450.00</p>
-                                    <p className="text-muted x-small mb-0">2 minutes ago</p>
-                                </div>
-                            </div>
+                            <img
+                                src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                                alt="Modern Real Estate"
+                                className="img-fluid rounded-4 shadow-2xl"
+                            />
                         </div>
                     </div>
                 </div>
@@ -111,18 +92,25 @@ const Home = () => {
                 <div className="container">
                     <div className="d-flex justify-content-between align-items-end mb-5">
                         <div>
-                            <h2 className="fw-bold text-dark display-6 mb-2">Editor's Picks</h2>
-                            <p className="text-muted mb-0">Explore our most popular real-world asset opportunities.</p>
+                            <h2 className="fw-bold text-dark display-6 mb-2">Live Investment Assets</h2>
+                            {loading && <div className="spinner-border spinner-border-sm text-primary ms-2" role="status"></div>}
+                            <p className="text-muted mb-0">Directly fetched from your backend API.</p>
                         </div>
-                        <a href="/explore" className="btn btn-link text-primary fw-semibold text-decoration-none">
-                            View All Properties <i className="bi bi-arrow-right ms-2"></i>
-                        </a>
                     </div>
 
+                    {error && <div className="alert alert-warning">API Connection Error: Using static demo data.</div>}
+
                     <div className="row g-4">
-                        {dummyProperties.map(property => (
-                            <div className="col-lg-4 col-md-6" key={property.id}>
-                                <PropertyCard {...property} />
+                        {displayProperties.map(property => (
+                            <div className="col-lg-4 col-md-6" key={property.id || property._id}>
+                                <PropertyCard
+                                    title={property.name}
+                                    location={property.location}
+                                    price={property.price}
+                                    yieldPercentage={property.yield}
+                                    progress={property.funding_progress}
+                                    image={property.image_url.startsWith('http') ? property.image_url : `${import.meta.env.VITE_IMAGE_BASE_URL}${property.image_url}`}
+                                />
                             </div>
                         ))}
                     </div>
