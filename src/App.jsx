@@ -8,9 +8,11 @@ import AdminUsers from './pages/Admin/AdminUsers';
 import Portfolio from './pages/Portfolio/Portfolio';
 import Explore from './pages/Explore/Explore';
 import PropertyDetails from './pages/PropertyDetails/PropertyDetails';
+import SecondaryMarket from './pages/Secondary/SecondaryMarket';
 import KYC from './pages/KYC/KYC';
 import { AuthProvider } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/property/:id" element={<PropertyDetails />} />
+            <Route path="/secondary-market" element={<SecondaryMarket />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/inventory" element={<AdminDashboard />} />
             <Route path="/admin/sales" element={<AdminInvestments />} />
@@ -32,6 +35,7 @@ function App() {
 
           {/* Global Components */}
           <AuthModal id="authModal" />
+          <Toaster position="top-center" reverseOrder={false} />
         </div>
       </Router>
     </AuthProvider>

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import ListSharesModal from '../../components/Secondary/ListSharesModal';
 import { investmentService } from '../../services/apiService';
 
 const Portfolio = () => {
     const [portfolioData, setPortfolioData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedToSell, setSelectedToSell] = useState(null);
 
     const fetchPortfolio = async () => {
         setLoading(true);
@@ -23,6 +25,19 @@ const Portfolio = () => {
     useEffect(() => {
         fetchPortfolio();
     }, []);
+
+    useEffect(() => {
+        if (selectedToSell) {
+            const modalEl = document.getElementById('listSharesModal');
+            if (modalEl) {
+                const modal = new window.bootstrap.Modal(modalEl);
+                modal.show();
+                modalEl.addEventListener('hidden.bs.modal', () => {
+                    setSelectedToSell(null);
+                }, { once: true });
+            }
+        }
+    }, [selectedToSell]);
 
     if (loading) {
         return (
@@ -187,9 +202,13 @@ const Portfolio = () => {
                                                             <span className="extra-small text-muted fw-bold">EST. INCOME</span>
                                                             <span className="extra-small text-success fw-bold">+${monthlyIncome.toFixed(2)}/mo</span>
                                                         </div>
-                                                        <div className="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
-                                                            <span className="extra-small text-muted">{new Date(inv.createdAt).toLocaleDateString()}</span>
-                                                            <i className="bi bi-arrow-right-short text-primary fs-5"></i>
+                                                        <div className="d-flex justify-content-between align-items-center gap-2 border-top pt-2 mt-2">
+                                                            <button
+                                                                className="btn btn-primary btn-sm rounded-pill flex-grow-1 extra-small fw-bold py-2"
+                                                                onClick={() => setSelectedToSell(inv)}
+                                                            >
+                                                                SELL ON MARKET
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -204,6 +223,11 @@ const Portfolio = () => {
             </div>
 
             <Footer />
+            <ListSharesModal
+                asset={selectedToSell?.asset}
+                availableShares={selectedToSell?.sharesBought}
+                onListingSuccess={fetchPortfolio}
+            />
             <style>{`
                 .extra-small { font-size: 0.7rem; letter-spacing: 0.05rem; }
                 .portfolio-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05) !important; }

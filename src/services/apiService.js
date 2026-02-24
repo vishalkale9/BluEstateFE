@@ -44,3 +44,10 @@ export const userService = {
     updateUser: (id, data) => api.put(`/users/${id}`, data),
     deleteUser: (id) => api.delete(`/users/${id}`),
 };
+
+export const secondaryService = {
+    getMarketListings: () => api.get('/secondary/market'),
+    listShares: (data) => api.post('/secondary/list', data),
+    buyFromMarket: (listingId, data) => api.post(`/secondary/buy/${listingId}`, data),
+    cancelListing: (listingId) => api.delete(`/secondary/cancel/${listingId}`),
+};
