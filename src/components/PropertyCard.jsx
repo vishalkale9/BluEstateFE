@@ -88,8 +88,6 @@ const PropertyCard = ({ id, image, title, location, price, yieldPercentage, prog
                         e.stopPropagation();
                         onInvest && onInvest(asset);
                     }}
-                    data-bs-toggle="modal"
-                    data-bs-target="#investModal"
                     disabled={availableShares <= 0}
                 >
                     {availableShares <= 0 ? 'Sold Out' : (listingType === 'Direct Purchase' ? 'Buy Entire Property' : 'Invest Now')}

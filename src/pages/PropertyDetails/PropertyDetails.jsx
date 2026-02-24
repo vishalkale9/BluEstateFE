@@ -47,6 +47,19 @@ const PropertyDetails = () => {
         fetchAsset();
     }, [id]);
 
+    useEffect(() => {
+        if (selectedAssetForModal) {
+            const modalEl = document.getElementById('investModal');
+            if (modalEl) {
+                const modal = new window.bootstrap.Modal(modalEl);
+                modal.show();
+                modalEl.addEventListener('hidden.bs.modal', () => {
+                    setSelectedAssetForModal(null);
+                }, { once: true });
+            }
+        }
+    }, [selectedAssetForModal]);
+
     if (loading) return (
         <div className="min-vh-100 bg-light">
             <Navbar />
@@ -282,8 +295,6 @@ const PropertyDetails = () => {
                                 <button
                                     className="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm"
                                     onClick={() => setSelectedAssetForModal(asset)}
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#investModal"
                                     disabled={asset.availableShares <= 0}
                                 >
                                     {asset.availableShares <= 0 ? 'Sold Out' : (asset.listingType === 'Direct Purchase' ? 'Buy Full Ownership' : 'Invest Now')}
