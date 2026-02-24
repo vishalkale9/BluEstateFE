@@ -13,6 +13,13 @@ export const authService = {
 };
 
 export const assetService = {
-    getAllAssets: () => api.get('/assets'),
+    getAllAssets: (params) => api.get('/assets', { params }),
     getAssetById: (id) => api.get(`/assets/${id}`),
+    createAsset: (assetData) => api.post('/assets', assetData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    updateAsset: (id, assetData) => api.put(`/assets/${id}`, assetData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    deleteAsset: (id) => api.delete(`/assets/${id}`),
 };
