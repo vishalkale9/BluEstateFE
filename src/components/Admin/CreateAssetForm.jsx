@@ -25,6 +25,7 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
         nearbyLandmarks: '',
         marketGrowth: '',
         projectHighlights: '',
+        currentMarketPrice: '',
     });
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -56,6 +57,7 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                 nearbyLandmarks: Array.isArray(initialData.nearbyLandmarks) ? initialData.nearbyLandmarks.join(', ') : (initialData.nearbyLandmarks || ''),
                 marketGrowth: initialData.marketGrowth || '',
                 projectHighlights: Array.isArray(initialData.projectHighlights) ? initialData.projectHighlights.join(', ') : (initialData.projectHighlights || ''),
+                currentMarketPrice: initialData.currentMarketPrice || initialData.tokenPrice || '',
             });
         } else {
             setFormData({
@@ -81,6 +83,7 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                 nearbyLandmarks: '',
                 marketGrowth: '',
                 projectHighlights: '',
+                currentMarketPrice: '',
             });
         }
     }, [initialData]);
@@ -149,6 +152,7 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                     nearbyLandmarks: '',
                     marketGrowth: '',
                     projectHighlights: '',
+                    currentMarketPrice: '',
                 });
                 setImages([]);
             }
@@ -285,7 +289,7 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                     </div>
 
                     <div className="col-md-6">
-                        <label className="form-label small fw-bold">Token Price ($)</label>
+                        <label className="form-label small fw-bold">Original Token Price ($)</label>
                         <input
                             type="number"
                             name="tokenPrice"
@@ -295,6 +299,19 @@ const CreateAssetForm = ({ onAssetCreated, initialData }) => {
                             value={formData.tokenPrice}
                             onChange={handleChange}
                         />
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label small fw-bold text-success">Current Market Price ($) <span className="badge bg-success-subtle text-success ms-1">LIVE</span></label>
+                        <input
+                            type="number"
+                            name="currentMarketPrice"
+                            className="form-control border-success border-opacity-25 bg-success bg-opacity-10 px-3 py-2 fw-bold"
+                            placeholder="110"
+                            value={formData.currentMarketPrice}
+                            onChange={handleChange}
+                        />
+                        <div className="form-text extra-small">Changing this triggers an immediate 'Live Gain' update for all investors.</div>
                     </div>
 
                     <div className="col-md-4">

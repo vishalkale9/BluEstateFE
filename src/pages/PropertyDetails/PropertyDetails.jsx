@@ -9,6 +9,9 @@ const PropertyDetails = () => {
     const { id } = useParams();
     const [asset, setAsset] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [history, setHistory] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+
     const [activeTab, setActiveTab] = useState('Overview');
     const [selectedAssetForModal, setSelectedAssetForModal] = useState(null);
 
@@ -60,6 +63,23 @@ const PropertyDetails = () => {
         }
     }, [selectedAssetForModal]);
 
+    useEffect(() => {
+        if (activeTab === 'Asset History') {
+            const fetchHistory = async () => {
+                setHistoryLoading(true);
+                try {
+                    const response = await assetService.getAssetHistory(id);
+                    setHistory(response.data?.data || response.data || []);
+                } catch (error) {
+                    console.error("Failed to fetch asset history", error);
+                } finally {
+                    setHistoryLoading(false);
+                }
+            };
+            fetchHistory();
+        }
+    }, [activeTab, id]);
+
     if (loading) return (
         <div className="min-vh-100 bg-light">
             <Navbar />
@@ -78,6 +98,16 @@ const PropertyDetails = () => {
             </div>
         </div>
     );
+
+    const formatHash = (hash) => {
+        if (!hash) return "N/A";
+        return `${hash.substring(0, 6)}...${hash.substring(hash.length - 4)}`;
+    };
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        alert("Hash copied to clipboard!");
+    };
 
     return (
         <div className="property-details-page bg-light min-vh-100">
@@ -117,13 +147,13 @@ const PropertyDetails = () => {
                         {/* Property Tabs */}
                         <div className="card border-0 shadow-sm rounded-4 p-4 mb-4">
                             <ul className="nav nav-pills gap-2 mb-4">
-                                {['Overview', 'Intelligence', 'Documents', 'Location'].map(tab => (
+                                {['Overview', 'Intelligence', 'Documents', 'Location', 'Asset History'].map(tab => (
                                     <li className="nav-item" key={tab}>
                                         <button
                                             className={`nav-link rounded-pill px-4 fw-bold ${activeTab === tab ? 'active bg-primary' : 'bg-light text-muted'}`}
                                             onClick={() => setActiveTab(tab)}
                                         >
-                                            {tab}
+                                            {tab === 'Asset History' ? <><i className="bi bi-shield-check me-2"></i>Asset History</> : tab}
                                         </button>
                                     </li>
                                 ))}
@@ -147,12 +177,13 @@ const PropertyDetails = () => {
                                             ))}
                                         </div>
 
-                                        <h5 className="fw-bold mb-3">Key Highlights</h5>
+                                        <h5 className="fw-bold mb-3">Premium Highlights</h5>
                                         <div className="row g-3">
-                                            {asset.highlights.map((h, idx) => (
-                                                <div className="col-md-6" key={idx}>
-                                                    <div className="card bg-primary bg-opacity-10 border-0 rounded-4 p-3 h-100">
-                                                        <p className="small fw-bold text-primary mb-0">{h}</p>
+                                            {asset.highlights?.map((h, idx) => (
+                                                <div className="col-md-4" key={idx}>
+                                                    <div className="card bg-primary bg-opacity-10 border-0 rounded-4 px-3 py-2 h-100 d-flex flex-row align-items-center border border-primary border-opacity-10">
+                                                        <i className="bi bi-patch-check-fill text-primary me-2 shadow-sm"></i>
+                                                        <p className="extra-small fw-bold text-primary mb-0 text-uppercase" style={{ letterSpacing: '0.05rem' }}>{h}</p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -217,7 +248,7 @@ const PropertyDetails = () => {
                                         <div className="card border-0 overflow-hidden rounded-4 shadow-sm" style={{ height: '400px' }}>
                                             <iframe
                                                 title="Location Map"
-                                                src={asset.mapUrl || `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d115531.06584227183!2d55.1950965!3d25.1932375!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43496ad9c645%3A0xbde66e5084295162!2sDubai!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae`}
+                                                src={asset.mapUrl || `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d115531.06584227183!2d${asset.lng || 55.1950965}!3d${asset.lat || 25.1932375}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f43496ad9c645%3A0xbde66e5084295162!2sDubai!5e0!3m2!1sen!2sae!4v1700000000000!5m2!1sen!2sae`}
                                                 width="100%"
                                                 height="100%"
                                                 style={{ border: 0 }}
@@ -227,13 +258,89 @@ const PropertyDetails = () => {
                                         </div>
                                         <div className="mt-3 p-3 bg-white border border-dashed rounded-4 d-flex justify-content-between align-items-center">
                                             <div className="d-flex align-items-center">
-                                                <i className="bi bi-compass text-primary fs-4 me-3"></i>
+                                                <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                                    <i className="bi bi-compass text-primary fs-5"></i>
+                                                </div>
                                                 <div>
-                                                    <p className="fw-bold mb-0 small">Coordinates</p>
-                                                    <p className="text-muted extra-small mb-0">{asset.lat}, {asset.lng}</p>
+                                                    <p className="fw-bold mb-0 small">Geographic Coordinates</p>
+                                                    <p className="text-muted extra-small mb-0">{asset.lat || '25.1932'}, {asset.lng || '55.1950'}</p>
                                                 </div>
                                             </div>
-                                            <a href={asset.mapUrl} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm rounded-pill px-4">Open in Maps</a>
+                                            {asset.mapUrl && (
+                                                <a href={asset.mapUrl} target="_blank" rel="noreferrer" className="btn btn-outline-primary btn-sm rounded-pill px-4 fw-bold">Open in Maps</a>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'Asset History' && (
+                                    <div className="animate__animated animate__fadeIn">
+                                        <div className="d-flex justify-content-between align-items-center mb-4">
+                                            <div>
+                                                <h5 className="fw-bold mb-1">On-Chain Audit Trail</h5>
+                                                <p className="text-muted extra-small">Immutable history of price discovery and ownership transfer.</p>
+                                            </div>
+                                            <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-bold extra-small">
+                                                <i className="bi bi-check-circle-fill me-1"></i> VERIFIED BY BLU-LEDGER
+                                            </span>
+                                        </div>
+
+                                        <div className="table-responsive">
+                                            <table className="table table-hover align-middle border-top">
+                                                <thead className="bg-light">
+                                                    <tr>
+                                                        <th className="extra-small fw-bold text-muted text-uppercase py-3 ps-3">Type</th>
+                                                        <th className="extra-small fw-bold text-muted text-uppercase py-3">Wallet</th>
+                                                        <th className="extra-small fw-bold text-muted text-uppercase py-3">Units</th>
+                                                        <th className="extra-small fw-bold text-muted text-uppercase py-3">Price</th>
+                                                        <th className="extra-small fw-bold text-muted text-uppercase py-3 pe-3 text-end">Audit Hash</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {historyLoading ? (
+                                                        <tr>
+                                                            <td colSpan="5" className="text-center py-5">
+                                                                <div className="spinner-border text-primary spinner-border-sm" role="status"></div>
+                                                            </td>
+                                                        </tr>
+                                                    ) : history.length === 0 ? (
+                                                        <tr>
+                                                            <td colSpan="5" className="text-center py-5 text-muted extra-small">
+                                                                No public transactions recorded for this asset yet.
+                                                            </td>
+                                                        </tr>
+                                                    ) : (
+                                                        history.map((tx, idx) => (
+                                                            <tr key={idx}>
+                                                                <td className="py-3 ps-3">
+                                                                    <span className={`badge rounded-pill px-3 py-1 extra-small fw-bold ${tx.type.includes('Purchase') ? 'bg-primary-subtle text-primary' :
+                                                                        tx.type.includes('Sale') ? 'bg-success-subtle text-success' :
+                                                                            'bg-info-subtle text-info'
+                                                                        }`}>
+                                                                        {tx.type.replace('_', ' ')}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-3">
+                                                                    <code className="text-muted extra-small">{tx.wallet}</code>
+                                                                </td>
+                                                                <td className="py-3 fw-bold small text-dark">{tx.shares}</td>
+                                                                <td className="py-3 fw-bold small text-dark">${tx.pricePerShare?.toLocaleString()}</td>
+                                                                <td className="py-3 pe-3 text-end">
+                                                                    <div className="d-flex align-items-center justify-content-end gap-2">
+                                                                        <code className="extra-small text-primary bg-primary bg-opacity-10 px-2 py-1 rounded cursor-pointer" title={tx.hash}>
+                                                                            {formatHash(tx.hash)}
+                                                                        </code>
+                                                                        <i
+                                                                            className="bi bi-copy text-muted cursor-pointer hover-primary"
+                                                                            onClick={() => copyToClipboard(tx.hash)}
+                                                                        ></i>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    )}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 )}
@@ -325,6 +432,12 @@ const PropertyDetails = () => {
                                     <div className="d-flex justify-content-between">
                                         <span className="text-muted small">Category</span>
                                         <span className="fw-medium small text-dark">{asset.category}</span>
+                                    </div>
+                                    <div className="d-flex justify-content-between">
+                                        <span className="text-muted small">Rent Yields</span>
+                                        <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill extra-small px-3">
+                                            {asset.rentFrequency || 'Monthly'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

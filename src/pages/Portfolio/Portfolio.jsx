@@ -2,21 +2,26 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ListSharesModal from '../../components/Secondary/ListSharesModal';
-import { investmentService } from '../../services/apiService';
+import { investmentService, financialService } from '../../services/apiService';
+import { Link } from 'react-router-dom';
 
 const Portfolio = () => {
     const [portfolioData, setPortfolioData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [investorStats, setInvestorStats] = useState(null);
     const [selectedToSell, setSelectedToSell] = useState(null);
 
     const fetchPortfolio = async () => {
         setLoading(true);
         try {
-            const response = await investmentService.getPortfolio();
-            // Expected Format: { success: true, count: X, summary: { totalInvested, totalShares }, data: [...] }
-            setPortfolioData(response.data);
+            const [portfolioRes, statsRes] = await Promise.all([
+                investmentService.getPortfolio(),
+                financialService.getInvestorView()
+            ]);
+            setPortfolioData(portfolioRes.data);
+            setInvestorStats(statsRes.data?.data || statsRes.data);
         } catch (error) {
-            console.error("Failed to fetch portfolio", error);
+            console.error("Failed to fetch portfolio data", error);
         } finally {
             setLoading(false);
         }
@@ -56,15 +61,8 @@ const Portfolio = () => {
         );
     }
 
-    const summary = portfolioData?.summary || { totalInvested: 0, totalShares: 0 };
-    const investments = portfolioData?.data || [];
-
-    // Monthly Yield Calculation based on APR
-    const totalEstMonthly = investments.reduce((acc, inv) => {
-        const principal = inv.totalAmount || 0;
-        const apr = inv.asset?.apr || 0;
-        return acc + ((principal * (apr / 100)) / 12);
-    }, 0);
+    const summary = investorStats?.summary || { capitalDeployed: 0, totalROI: '0%', estimatedPortfolioValue: 0, netGain: 0 };
+    const investments = investorStats?.breakdown || [];
 
     return (
         <div className="min-vh-100 bg-light">
@@ -83,16 +81,22 @@ const Portfolio = () => {
                         </div>
                         <div className="col-lg-5">
                             <div className="row g-3">
-                                <div className="col-md-6 col-6">
-                                    <div className="card border-0 bg-dark text-white rounded-4 p-3 p-lg-4 shadow-lg h-100">
-                                        <p className="extra-small opacity-75 mb-1 text-uppercase fw-bold">Total Capital</p>
-                                        <h3 className="fw-bold mb-0">${summary.totalInvested.toLocaleString()}</h3>
+                                <div className="col-md-4 col-6">
+                                    <div className="card border-0 bg-dark text-white rounded-4 p-3 shadow-lg h-100">
+                                        <p className="extra-small opacity-75 mb-1 text-uppercase fw-bold">Deployed</p>
+                                        <h4 className="fw-bold mb-0">${summary.capitalDeployed?.toLocaleString()}</h4>
                                     </div>
                                 </div>
-                                <div className="col-md-6 col-6">
-                                    <div className="card border-0 bg-primary text-white rounded-4 p-3 p-lg-4 shadow-lg h-100">
-                                        <p className="extra-small opacity-75 mb-1 text-uppercase fw-bold">Est. Monthly</p>
-                                        <h3 className="fw-bold mb-0">+${totalEstMonthly.toFixed(2)}</h3>
+                                <div className="col-md-4 col-6">
+                                    <div className="card border-0 bg-primary text-white rounded-4 p-3 shadow-lg h-100">
+                                        <p className="extra-small opacity-75 mb-1 text-uppercase fw-bold">Net ROI</p>
+                                        <h4 className="fw-bold mb-0">{summary.totalROI}</h4>
+                                    </div>
+                                </div>
+                                <div className="col-md-4 col-12">
+                                    <div className="card border-0 bg-success text-white rounded-4 p-3 shadow-lg h-100">
+                                        <p className="extra-small opacity-75 mb-1 text-uppercase fw-bold">Live Gain</p>
+                                        <h4 className="fw-bold mb-0">+${summary.netGain?.toLocaleString() || '0'}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -118,7 +122,7 @@ const Portfolio = () => {
                             </div>
                             <div className="mb-2">
                                 <div className="d-flex justify-content-between small text-muted mb-2">
-                                    <span className="fw-bold">Active Listings</span>
+                                    <span className="fw-bold">Active Holdings</span>
                                     <span className="text-dark fw-bold">{investments.length} Assets</span>
                                 </div>
                                 <div className="progress rounded-pill" style={{ height: '8px' }}>
@@ -126,10 +130,14 @@ const Portfolio = () => {
                                 </div>
                             </div>
                             <hr className="my-4" />
-                            <div className="alert alert-primary bg-primary bg-opacity-10 border-0 rounded-4 px-3 py-2 mb-0">
+                            <div className="alert alert-primary bg-primary bg-opacity-10 border-0 rounded-4 px-3 py-2 mb-4">
                                 <i className="bi bi-info-circle-fill me-2"></i>
                                 <span className="extra-small fw-bold">Yields are normalized at month-end.</span>
                             </div>
+
+                            <Link to="/portfolio/history" className="btn btn-outline-dark w-100 rounded-pill py-2 fw-bold small shadow-sm">
+                                <i className="bi bi-receipt me-2"></i> FINANCIAL STATEMENT
+                            </Link>
                         </div>
                     </div>
 
@@ -155,59 +163,78 @@ const Portfolio = () => {
                             </div>
                         ) : (
                             <div className="row g-3">
-                                {investments.map((inv) => {
-                                    const assetImage = inv.asset?.images?.[0]
-                                        ? `${import.meta.env.VITE_IMAGE_BASE_URL}/uploads/${inv.asset.images[0]}`
+                                {investments.map((inv, idx) => {
+                                    // Match back to original asset for imagery and details
+                                    const originalInv = portfolioData?.data?.find(d => d.asset?.title === inv.asset);
+
+                                    const assetImage = originalInv?.asset?.images?.[0]
+                                        ? `${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/uploads/${originalInv.asset.images[0]}`
                                         : "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
 
-                                    const monthlyIncome = ((inv.totalAmount * (inv.asset?.apr || 0) / 100) / 12);
-
                                     return (
-                                        <div key={inv._id} className="col-md-6 col-lg-4">
+                                        <div key={idx} className="col-md-6 col-lg-4">
                                             <div className="card border-0 shadow-sm rounded-4 overflow-hidden h-100 portfolio-item bg-white border">
                                                 <div className="position-relative">
                                                     <img
                                                         src={assetImage}
                                                         className="w-100"
                                                         style={{ height: '140px', objectFit: 'cover' }}
-                                                        alt={inv.asset?.title}
+                                                        alt={inv.asset}
                                                     />
                                                     <div className="position-absolute top-0 end-0 m-2">
                                                         <span className="badge bg-white text-primary rounded-pill shadow-sm small fw-bold px-2 py-1">
-                                                            {inv.asset?.apr}% APR
+                                                            {inv.roi} ROI
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <div className="card-body p-3 d-flex flex-column">
-                                                    <h6 className="fw-bold text-dark mb-1 text-truncate">{inv.asset?.title}</h6>
+                                                    <h6 className="fw-bold text-dark mb-1 text-truncate">{inv.asset}</h6>
                                                     <p className="extra-small text-muted mb-2 text-truncate">
-                                                        <i className="bi bi-geo-alt-fill text-primary me-1"></i>{inv.asset?.location}
+                                                        <i className="bi bi-geo-alt-fill text-primary me-1"></i>PROXIMITY VERIFIED
                                                     </p>
 
-                                                    <div className="bg-light rounded-3 p-2 mb-3">
-                                                        <div className="row g-0 align-items-center">
-                                                            <div className="col-6 border-end text-center">
-                                                                <p className="extra-small text-muted mb-0 fw-bold">SHARES</p>
-                                                                <p className="fw-bold text-dark mb-0 small">{inv.sharesBought}</p>
+                                                    <div className="bg-light rounded-3 p-3 mb-3">
+                                                        <div className="row g-2 align-items-center">
+                                                            <div className="col-12 border-bottom pb-2 mb-2">
+                                                                <div className="d-flex justify-content-between">
+                                                                    <span className="extra-small text-muted fw-bold">EST. VALUE</span>
+                                                                    <span className="extra-small text-dark fw-bold">
+                                                                        (Verified: {inv.lastAppraisalDate ? new Date(inv.lastAppraisalDate).toLocaleDateString() : 'N/A'})
+                                                                    </span>
+                                                                </div>
+                                                                <p className="fw-bold text-primary mb-0">${inv.currentEstimate?.toLocaleString()}</p>
                                                             </div>
-                                                            <div className="col-6 text-center">
-                                                                <p className="extra-small text-muted mb-0 fw-bold">VALUE</p>
-                                                                <p className="fw-bold text-primary mb-0 small">${inv.totalAmount.toLocaleString()}</p>
+                                                            <div className="col-6 border-end">
+                                                                <p className="extra-small text-muted mb-0 fw-bold uppercase">Your Buy Price</p>
+                                                                <p className="fw-bold text-dark mb-0 small">${inv.avgEntryPrice?.toFixed(2)}</p>
+                                                            </div>
+                                                            <div className="col-6 ps-3">
+                                                                <p className="extra-small text-muted mb-0 fw-bold uppercase">Market Price</p>
+                                                                <div className="d-flex align-items-center">
+                                                                    <p className="fw-bold text-dark mb-0 small">${inv.currentMarketPrice?.toFixed(2)}</p>
+                                                                    <span className="ms-2 badge bg-success text-white rounded-pill px-2 py-0 extra-small animate-pulse" style={{ fontSize: '0.6rem' }}>LIVE</span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     <div className="mt-auto">
                                                         <div className="d-flex justify-content-between align-items-center mb-1">
-                                                            <span className="extra-small text-muted fw-bold">EST. INCOME</span>
-                                                            <span className="extra-small text-success fw-bold">+${monthlyIncome.toFixed(2)}/mo</span>
+                                                            <span className="extra-small text-muted fw-bold">SHARES OWNED</span>
+                                                            <span className="extra-small text-dark fw-bold">{inv.totalShares} Units</span>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between align-items-center mb-1">
+                                                            <span className="extra-small text-muted fw-bold">NET GAIN</span>
+                                                            <span className="extra-small fw-bold text-success">
+                                                                {inv.netGain >= 0 ? '+' : ''}${inv.netGain?.toLocaleString()}
+                                                            </span>
                                                         </div>
                                                         <div className="d-flex justify-content-between align-items-center gap-2 border-top pt-2 mt-2">
                                                             <button
                                                                 className="btn btn-primary btn-sm rounded-pill flex-grow-1 extra-small fw-bold py-2"
-                                                                onClick={() => setSelectedToSell(inv)}
+                                                                onClick={() => setSelectedToSell(originalInv)}
                                                             >
-                                                                SELL ON MARKET
+                                                                RE-LIST ON MARKET
                                                             </button>
                                                         </div>
                                                     </div>
@@ -233,6 +260,11 @@ const Portfolio = () => {
                 .portfolio-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05) !important; }
                 .portfolio-item:hover { transform: translateY(-5px); shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important; }
                 .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
+                .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: .5; }
+                }
                 @media (max-width: 768px) {
                     .portfolio-item img { min-height: 220px !important; }
                 }

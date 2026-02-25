@@ -6,6 +6,7 @@ import AdminInvestments from './pages/Admin/AdminInvestments';
 import AdminKYC from './pages/Admin/AdminKYC';
 import AdminUsers from './pages/Admin/AdminUsers';
 import Portfolio from './pages/Portfolio/Portfolio';
+import TransactionHistory from './pages/Portfolio/TransactionHistory';
 import Explore from './pages/Explore/Explore';
 import PropertyDetails from './pages/PropertyDetails/PropertyDetails';
 import SecondaryMarket from './pages/Secondary/SecondaryMarket';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/admin/kyc" element={<AdminKYC />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/portfolio/history" element={<TransactionHistory />} />
             <Route path="/kyc" element={<KYC />} />
           </Routes>
 

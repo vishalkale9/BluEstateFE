@@ -22,6 +22,7 @@ export const assetService = {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
     deleteAsset: (id) => api.delete(`/assets/${id}`),
+    getAssetHistory: (id) => api.get(`/assets/${id}/history`),
 };
 
 export const investmentService = {
@@ -50,4 +51,13 @@ export const secondaryService = {
     listShares: (data) => api.post('/secondary/list', data),
     buyFromMarket: (listingId, data) => api.post(`/secondary/buy/${listingId}`, data),
     cancelListing: (listingId) => api.delete(`/secondary/cancel/${listingId}`),
+};
+
+export const financialService = {
+    getStatement: () => api.get('/financial/statement'),
+    getInvestorView: () => api.get('/financial/investor-view'),
+    getNotifications: () => api.get('/financial/notifications'),
+    markNotificationAsRead: (id) => api.put(`/financial/notifications/read/${id}`),
+    deposit: (data) => api.post('/financial/deposit', data),
+    withdraw: (data) => api.post('/financial/withdraw', data),
 };
